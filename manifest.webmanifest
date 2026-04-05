@@ -1,0 +1,13 @@
+{
+  "name": "安医大护理考研执行助手",
+  "short_name": "考研执行助手",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#111827",
+  "description": "用于执行安医大 2027 护理考研英语、政治与 308 计划的手机端学习助手。",
+  "icons": [
+    { "src": "./assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "./assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

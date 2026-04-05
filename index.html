@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#111827" />
+  <title>安医大护理考研执行助手</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --primary: #111827;
+      --primary-2: #334155;
+      --good: #16a34a;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --shadow: 0 8px 28px rgba(15, 23, 42, .08);
+      --radius: 22px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Microsoft YaHei",sans-serif; }
+    body { padding: 16px; }
+    .app { max-width: 480px; margin: 0 auto; }
+    .hero {
+      color: #fff;
+      background: linear-gradient(135deg, #111827 0%, #334155 100%);
+      border-radius: 28px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+    .title { font-size: 26px; font-weight: 700; margin: 4px 0 8px; }
+    .sub { font-size: 13px; opacity: .88; }
+    .chips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+    .chip { background: rgba(255,255,255,.12); padding: 12px; border-radius: 18px; }
+    .chip .k { font-size: 12px; opacity: .8; }
+    .chip .v { font-size: 22px; font-weight: 700; margin-top: 4px; }
+    .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 14px 0; }
+    .tab { appearance: none; border: 1px solid var(--line); background: #fff; color: var(--muted); padding: 12px 8px; border-radius: 18px; font-weight: 600; }
+    .tab.active { background: var(--primary); color: white; border-color: transparent; }
+    .page { display: none; }
+    .page.active { display: block; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); margin-bottom: 12px; }
+    .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .h1 { font-size: 20px; font-weight: 700; margin: 0; }
+    .muted { color: var(--muted); font-size: 13px; }
+    .statgrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .task { border: 1px solid var(--line); border-radius: 18px; padding: 12px; display: flex; gap: 12px; align-items: flex-start; margin-top: 10px; }
+    .task.done { opacity: .7; }
+    .check { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #cbd5e1; display: grid; place-items: center; flex: none; margin-top: 2px; }
+    .task.done .check { background: var(--good); border-color: var(--good); color: #fff; }
+    .badge { font-size: 11px; padding: 4px 8px; border-radius: 999px; background: #f1f5f9; color: var(--muted); }
+    .small { font-size: 12px; color: var(--muted); }
+    .bar { height: 10px; background: #e2e8f0; border-radius: 999px; overflow: hidden; margin-top: 10px; }
+    .bar > span { display: block; height: 100%; background: var(--primary); border-radius: 999px; }
+    .months { display: grid; gap: 10px; }
+    .month { border: 1px solid var(--line); border-radius: 18px; padding: 12px; }
+    .timer { font-size: 52px; text-align: center; font-weight: 800; letter-spacing: -2px; padding: 6px 0 16px; }
+    .actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .btn { appearance: none; border: 0; background: #e2e8f0; color: var(--text); padding: 12px; border-radius: 18px; font-weight: 700; }
+    .btn.primary { background: var(--primary); color: #fff; }
+    .inline { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    input[type="number"], input[type="date"], input[type="text"], select {
+      width: 100%; border: 1px solid var(--line); border-radius: 14px; padding: 12px; font-size: 14px; background: #fff;
+    }
+    label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    .field { margin-top: 10px; }
+    .footer { text-align: center; color: var(--muted); font-size: 12px; padding: 10px 0 24px; }
+    .tip { background: #f8fafc; border-radius: 16px; padding: 12px; color: var(--muted); font-size: 13px; }
+    .topgap { margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="hero">
+      <div class="sub">安医大 2027 护理考研</div>
+      <div class="title">学习执行助手</div>
+      <div class="sub">英语：刘晓艳 + 唐迟 + 石雷鹏 ｜ 政治：徐涛 + 肖秀荣</div>
+      <div class="chips">
+        <div class="chip"><div class="k">总进度</div><div class="v" id="heroProgress">0%</div></div>
+        <div class="chip"><div class="k">今日时长</div><div class="v" id="heroMinutes">0分</div></div>
+        <div class="chip"><div class="k">日目标</div><div class="v" id="heroTarget">240分</div></div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="today">今日</button>
+      <button class="tab" data-tab="plan">计划</button>
+      <button class="tab" data-tab="focus">专注</button>
+      <button class="tab" data-tab="stats">统计</button>
+    </div>
+
+    <section class="page active" id="page-today">
+      <div class="statgrid">
+        <div class="card"><div class="muted">当前阶段</div><div class="h1" id="phaseName">基础期</div><div class="muted">2026-04 至 2026-06</div></div>
+        <div class="card"><div class="muted">推荐英语时长</div><div class="h1">150分</div><div class="muted">单词 + 语法 + 阅读</div></div>
+      </div>
+      <div class="card">
+        <div class="row"><div><div class="h1">今日清单</div><div class="muted">先完成高优先级任务</div></div><div class="badge" id="todayDate"></div></div>
+        <div id="todayTasks"></div>
+      </div>
+      <div class="card">
+        <div class="row"><div><div class="h1">快速新增</div><div class="muted">补充你当天的临时任务</div></div></div>
+        <div class="field"><label>任务名称</label><input id="newTitle" type="text" placeholder="例如：英语阅读 2 篇" /></div>
+        <div class="field"><label>学科</label><select id="newSubject"><option>英语</option><option>政治</option><option>308护理综合</option><option>其他</option></select></div>
+        <div class="field"><label>预计时长（分钟）</label><input id="newMinutes" type="number" min="5" step="5" value="30" /></div>
+        <div class="field"><button class="btn primary" id="addTaskBtn">加入今日清单</button></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-plan">
+      <div class="card">
+        <div class="h1">月度计划</div>
+        <div class="muted">按阶段推进，不频繁换资料</div>
+        <div class="months topgap" id="months"></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-focus">
+      <div class="card">
+        <div class="h1">专注计时</div>
+        <div class="muted">默认 25 分钟，完成后自动累计今日时长</div>
+        <div class="timer" id="timer">25:00</div>
+        <div class="actions">
+          <button class="btn primary" id="startBtn">开始</button>
+          <button class="btn" id="resetBtn">重置</button>
+          <button class="btn" id="manualBtn">手动+25</button>
+        </div>
+        <div class="tip topgap">建议搭配：英语阅读 25+5，政治选择题 30+5，作文默写 40+10。</div>
+      </div>
+      <div class="card">
+        <div class="h1">偏好设置</div>
+        <div class="field"><label>每日目标（分钟）</label><input id="dailyTargetInput" type="number" min="30" step="10" /></div>
+        <div class="field"><label>番茄钟时长（分钟）</label><input id="pomodoroInput" type="number" min="5" step="5" /></div>
+        <div class="field"><button class="btn primary" id="saveSettingsBtn">保存设置</button></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-stats">
+      <div class="statgrid">
+        <div class="card"><div class="muted">完成任务</div><div class="h1" id="doneTasks">0</div><div class="muted" id="allTasks">共 0 项</div></div>
+        <div class="card"><div class="muted">今日达成</div><div class="h1" id="goalRate">0%</div><div class="muted">按日目标计算</div></div>
+      </div>
+      <div class="card">
+        <div class="h1">执行建议</div>
+        <div class="tip topgap">英语先保单词、语法、阅读三条线不断；政治 7 月后正式启动，前期以选择题为主；每周至少安排一次复盘，更新计划和完成状态。</div>
+      </div>
+      <div class="card">
+        <div class="h1">数据管理</div>
+        <div class="field"><button class="btn" id="exportBtn">导出数据(JSON)</button></div>
+        <div class="field"><label>导入数据</label><input id="importFile" type="file" accept="application/json" /></div>
+      </div>
+    </section>
+
+    <div class="footer">可安装到主屏幕的 PWA 版本。首次部署到 HTTPS 后，可像 App 一样使用。</div>
+  </div>
+
+<script>
+const seedTasks = [
+  { id: 1, month: '2026-04', phase: '基础期', phaseRange: '2026-04 至 2026-06', subject: '英语', title: '刘晓艳语法基础课', detail: '完成语法主线课程约60%，建立句子成分概念', priority: '高', minutes: 60, done: false, date: '' },
+  { id: 2, month: '2026-04', phase: '基础期', phaseRange: '2026-04 至 2026-06', subject: '英语', title: '每日单词', detail: '新词80-120 + 复习150-200', priority: '高', minutes: 40, done: false, date: '' },
+  { id: 3, month: '2026-04', phase: '基础期', phaseRange: '2026-04 至 2026-06', subject: '英语', title: '阅读真题入门', detail: '每周2-3篇，精做+复盘', priority: '高', minutes: 70, done: false, date: '' },
+  { id: 4, month: '2026-05', phase: '基础期', phaseRange: '2026-04 至 2026-06', subject: '英语', title: '刘晓艳长难句课', detail: '学会拆主干、识别从句与修饰成分', priority: '高', minutes: 60, done: false, date: '' },
+  { id: 5, month: '2026-05', phase: '基础期', phaseRange: '2026-04 至 2026-06', subject: '英语', title: '真题句子拆解', detail: '每天3-5句，形成笔记', priority: '中', minutes: 30, done: false, date: '' },
+  { id: 6, month: '2026-06', phase: '基础期', phaseRange: '2026-04 至 2026-06', subject: '英语', title: '唐迟阅读方法课', detail: '建立主旨题、细节题、推理题思路', priority: '高', minutes: 50, done: false, date: '' },
+  { id: 7, month: '2026-07', phase: '强化期', phaseRange: '2026-07 至 2026-08', subject: '英语', title: '阅读强化', detail: '近年阅读真题精做，形成错题本', priority: '高', minutes: 90, done: false, date: '' },
+  { id: 8, month: '2026-07', phase: '强化期', phaseRange: '2026-07 至 2026-08', subject: '政治', title: '徐涛强化课启动', detail: '看课+配套讲义', priority: '高', minutes: 50, done: false, date: '' },
+  { id: 9, month: '2026-07', phase: '强化期', phaseRange: '2026-07 至 2026-08', subject: '政治', title: '肖秀荣1000题一刷', detail: '按章节刷题并订正', priority: '高', minutes: 50, done: false, date: '' },
+  { id: 10, month: '2026-08', phase: '强化期', phaseRange: '2026-07 至 2026-08', subject: '英语', title: '长难句辅助复盘', detail: '用刘晓艳方法回拆阅读难句', priority: '中', minutes: 30, done: false, date: '' },
+  { id: 11, month: '2026-08', phase: '强化期', phaseRange: '2026-07 至 2026-08', subject: '政治', title: '1000题持续推进', detail: '聚焦选择题正确率', priority: '高', minutes: 60, done: false, date: '' },
+  { id: 12, month: '2026-09', phase: '提高期', phaseRange: '2026-09 至 2026-10', subject: '英语', title: '阅读二刷', detail: '检验是否真正掌握命题逻辑', priority: '高', minutes: 70, done: false, date: '' },
+  { id: 13, month: '2026-09', phase: '提高期', phaseRange: '2026-09 至 2026-10', subject: '英语', title: '石雷鹏作文启动', detail: '先小作文后大作文，整理自己的模板', priority: '高', minutes: 45, done: false, date: '' },
+  { id: 14, month: '2026-09', phase: '提高期', phaseRange: '2026-09 至 2026-10', subject: '政治', title: '1000题二刷', detail: '错题回看，强化高频考点', priority: '高', minutes: 60, done: false, date: '' },
+  { id: 15, month: '2026-10', phase: '提高期', phaseRange: '2026-09 至 2026-10', subject: '英语', title: '翻译/新题型/完形补齐', detail: '每周安排固定练习频次', priority: '中', minutes: 45, done: false, date: '' },
+  { id: 16, month: '2026-10', phase: '提高期', phaseRange: '2026-09 至 2026-10', subject: '政治', title: '背诵框架建立', detail: '选择一套主背资料，不要来回换', priority: '中', minutes: 30, done: false, date: '' },
+  { id: 17, month: '2026-11', phase: '冲刺期', phaseRange: '2026-11', subject: '英语', title: '整套真题训练', detail: '每周至少2套，按考试时间做', priority: '高', minutes: 120, done: false, date: '' },
+  { id: 18, month: '2026-11', phase: '冲刺期', phaseRange: '2026-11', subject: '英语', title: '作文定型与默写', detail: '每周手写2篇', priority: '高', minutes: 40, done: false, date: '' },
+  { id: 19, month: '2026-11', phase: '冲刺期', phaseRange: '2026-11', subject: '政治', title: '系统背诵启动', detail: '主观题素材集中背诵', priority: '高', minutes: 50, done: false, date: '' },
+  { id: 20, month: '2026-12', phase: '临考期', phaseRange: '2026-12 至 考前', subject: '政治', title: '肖八选择题', detail: '重点分析错题与易混点', priority: '高', minutes: 60, done: false, date: '' },
+  { id: 21, month: '2026-12', phase: '临考期', phaseRange: '2026-12 至 考前', subject: '政治', title: '肖四大题背诵', detail: '最后冲刺背诵', priority: '高', minutes: 60, done: false, date: '' },
+  { id: 22, month: '2026-12', phase: '临考期', phaseRange: '2026-12 至 考前', subject: '英语', title: '错题与高频词回顾', detail: '回看阅读错题与作文模板', priority: '高', minutes: 45, done: false, date: '' }
+];
+const monthLabels = ['2026-04','2026-05','2026-06','2026-07','2026-08','2026-09','2026-10','2026-11','2026-12'];
+const store = {
+  get(key, fallback) { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } },
+  set(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
+};
+let tasks = store.get('kaoyan_tasks_v2', seedTasks);
+let dailyTarget = store.get('kaoyan_daily_target_v2', 240);
+let pomodoroMinutes = store.get('kaoyan_pomodoro_minutes_v2', 25);
+let todayMinutes = store.get('kaoyan_today_minutes_v2', 0);
+let timerSeconds = pomodoroMinutes * 60;
+let timerId = null;
+const today = new Date().toISOString().slice(0,10);
+
+function saveAll() {
+  store.set('kaoyan_tasks_v2', tasks);
+  store.set('kaoyan_daily_target_v2', dailyTarget);
+  store.set('kaoyan_pomodoro_minutes_v2', pomodoroMinutes);
+  store.set('kaoyan_today_minutes_v2', todayMinutes);
+}
+
+function id() { return Date.now() + Math.floor(Math.random() * 1000); }
+function phaseInfo(month) {
+  if (month <= '2026-06') return { name: '基础期', range: '2026-04 至 2026-06' };
+  if (month <= '2026-08') return { name: '强化期', range: '2026-07 至 2026-08' };
+  if (month <= '2026-10') return { name: '提高期', range: '2026-09 至 2026-10' };
+  if (month <= '2026-11') return { name: '冲刺期', range: '2026-11' };
+  return { name: '临考期', range: '2026-12 至 考前' };
+}
+function currentPlanMonth() {
+  const m = new Date().toISOString().slice(0,7);
+  return monthLabels.includes(m) ? m : '2026-04';
+}
+function currentTasks() {
+  const m = currentPlanMonth();
+  return tasks.filter(t => (t.date === today) || (!t.date && t.month === m)).sort((a,b) => (a.done===b.done?0:a.done?1:-1));
+}
+function formatTimer(sec) { const m = String(Math.floor(sec/60)).padStart(2,'0'); const s = String(sec%60).padStart(2,'0'); return `${m}:${s}`; }
+
+function renderTabs() {
+  document.querySelectorAll('.tab').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.page').forEach(x => x.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('page-' + btn.dataset.tab).classList.add('active');
+    };
+  });
+}
+
+function renderHero() {
+  const done = tasks.filter(t => t.done).length;
+  const progress = Math.round(done / tasks.length * 100) || 0;
+  document.getElementById('heroProgress').textContent = progress + '%';
+  document.getElementById('heroMinutes').textContent = todayMinutes + '分';
+  document.getElementById('heroTarget').textContent = dailyTarget + '分';
+  document.getElementById('doneTasks').textContent = done;
+  document.getElementById('allTasks').textContent = `共 ${tasks.length} 项`;
+  document.getElementById('goalRate').textContent = Math.round(todayMinutes / dailyTarget * 100) + '%';
+}
+
+function renderToday() {
+  const m = currentPlanMonth();
+  const phase = phaseInfo(m);
+  document.getElementById('phaseName').textContent = phase.name;
+  document.getElementById('todayDate').textContent = today;
+  const taskBox = document.getElementById('todayTasks');
+  const list = currentTasks().slice(0, 8);
+  taskBox.innerHTML = '';
+  list.forEach(task => {
+    const el = document.createElement('div');
+    el.className = 'task' + (task.done ? ' done' : '');
+    el.innerHTML = `
+      <button class="check" aria-label="toggle">${task.done ? '✓' : ''}</button>
+      <div style="flex:1">
+        <div class="row"><div style="font-weight:700">${task.title}</div><div class="badge">${task.subject}</div></div>
+        <div class="small" style="margin-top:6px">${task.detail || '无备注'}</div>
+        <div class="small" style="margin-top:8px">预计 ${task.minutes} 分钟</div>
+      </div>`;
+    el.querySelector('.check').onclick = () => {
+      task.done = !task.done;
+      saveAll(); renderAll();
+    };
+    taskBox.appendChild(el);
+  });
+  if (!list.length) taskBox.innerHTML = '<div class="tip topgap">今天还没有任务，先加一个小任务开始。</div>';
+}
+
+function renderPlan() {
+  const box = document.getElementById('months');
+  box.innerHTML = '';
+  monthLabels.forEach(m => {
+    const list = tasks.filter(t => t.month === m);
+    const done = list.filter(t => t.done).length;
+    const rate = Math.round(done / (list.length || 1) * 100);
+    const el = document.createElement('div');
+    el.className = 'month';
+    el.innerHTML = `
+      <div class="row"><div style="font-weight:700">${m}</div><div class="small">${done}/${list.length}</div></div>
+      <div class="bar"><span style="width:${rate}%"></span></div>
+      <div class="small" style="margin-top:8px">完成度 ${rate}%</div>`;
+    box.appendChild(el);
+  });
+}
+
+function renderFocus() {
+  document.getElementById('timer').textContent = formatTimer(timerSeconds);
+  document.getElementById('dailyTargetInput').value = dailyTarget;
+  document.getElementById('pomodoroInput').value = pomodoroMinutes;
+  document.getElementById('startBtn').textContent = timerId ? '暂停' : '开始';
+}
+
+function bindActions() {
+  document.getElementById('addTaskBtn').onclick = () => {
+    const title = document.getElementById('newTitle').value.trim();
+    const subject = document.getElementById('newSubject').value;
+    const minutes = Number(document.getElementById('newMinutes').value || 30);
+    if (!title) return alert('请先填任务名称');
+    tasks.unshift({ id: id(), month: currentPlanMonth(), phase: phaseInfo(currentPlanMonth()).name, phaseRange: phaseInfo(currentPlanMonth()).range, subject, title, detail: '手动新增任务', priority: '中', minutes, done: false, date: today });
+    document.getElementById('newTitle').value = '';
+    saveAll(); renderAll();
+  };
+  document.getElementById('startBtn').onclick = () => {
+    if (timerId) {
+      clearInterval(timerId); timerId = null; renderFocus(); return;
+    }
+    timerId = setInterval(() => {
+      timerSeconds -= 1;
+      if (timerSeconds <= 0) {
+        clearInterval(timerId); timerId = null;
+        todayMinutes += pomodoroMinutes;
+        timerSeconds = pomodoroMinutes * 60;
+        saveAll();
+        alert('专注完成，已累计今日时长。');
+      }
+      renderAll();
+    }, 1000);
+    renderFocus();
+  };
+  document.getElementById('resetBtn').onclick = () => {
+    if (timerId) { clearInterval(timerId); timerId = null; }
+    timerSeconds = pomodoroMinutes * 60; renderAll();
+  };
+  document.getElementById('manualBtn').onclick = () => { todayMinutes += pomodoroMinutes; saveAll(); renderAll(); };
+  document.getElementById('saveSettingsBtn').onclick = () => {
+    dailyTarget = Number(document.getElementById('dailyTargetInput').value || 240);
+    pomodoroMinutes = Number(document.getElementById('pomodoroInput').value || 25);
+    if (timerId) { clearInterval(timerId); timerId = null; }
+    timerSeconds = pomodoroMinutes * 60; saveAll(); renderAll();
+  };
+  document.getElementById('exportBtn').onclick = () => {
+    const data = { tasks, dailyTarget, pomodoroMinutes, todayMinutes };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'kaoyan_assistant_backup.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+  document.getElementById('importFile').onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const text = await file.text();
+    try {
+      const data = JSON.parse(text);
+      tasks = data.tasks || tasks;
+      dailyTarget = data.dailyTarget || dailyTarget;
+      pomodoroMinutes = data.pomodoroMinutes || pomodoroMinutes;
+      todayMinutes = data.todayMinutes || todayMinutes;
+      timerSeconds = pomodoroMinutes * 60;
+      saveAll(); renderAll();
+      alert('导入成功');
+    } catch {
+      alert('导入失败，请检查 JSON 文件');
+    }
+  };
+}
+
+function renderAll() { renderHero(); renderToday(); renderPlan(); renderFocus(); }
+
+window.addEventListener('load', () => {
+  document.getElementById('todayDate').textContent = today;
+  renderTabs(); bindActions(); renderAll();
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+});
+</script>
+</body>
+</html>
